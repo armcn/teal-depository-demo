@@ -1,0 +1,11 @@
+{
+  "manifest_sha256": "ef515d99088582fd66362966e58ba7b7f12da696b8ec77c10fba764102863de2",
+  "previous": "none",
+  "promoted_at": "2026-09-30T15:55:14.431987+00:00",
+  "promotion_workflow_url": "https://github.com/armcn/teal-depository-demo/actions/runs/36738607649",
+  "snapshot": "run-36738117277-1-6efcee49892f",
+  "source_commit": "6efcee49892fcf6000c547deab7eaabf5e7b09d0",
+  "verification": "cold-online-restore-and-app-smoke",
+  "verified_at": "2026-09-30T15:50:24.591411+00:00",
+  "workflow_url": "https://github.com/armcn/teal-depository-demo/actions/runs/36738117277"
+}
