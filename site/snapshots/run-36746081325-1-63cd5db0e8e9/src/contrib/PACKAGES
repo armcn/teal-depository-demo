@@ -1,0 +1,25 @@
+Package: tb.builder
+Version: 0.1.1
+Imports: shiny, jsonlite, tb.modules (>= 0.1.0), tb.checks (>= 0.1.0)
+License: MIT + file LICENSE
+MD5sum: 99e3c24dce49490a23958fa80550fbef
+NeedsCompilation: no
+
+Package: tb.checks
+Version: 0.1.1
+License: MIT + file LICENSE
+MD5sum: 1ed0c8b6ac62a2506d7ac3722f366c47
+NeedsCompilation: no
+
+Package: tb.modules
+Version: 0.1.1
+Imports: shiny, tb.checks (>= 0.1.0), tb.reporter (>= 0.1.0)
+License: MIT + file LICENSE
+MD5sum: e6636c8c0aa255fe9968fa65411e31db
+NeedsCompilation: no
+
+Package: tb.reporter
+Version: 0.1.2
+License: MIT + file LICENSE
+MD5sum: 5ae5ee305a9d6c5fbbe987d881bc149c
+NeedsCompilation: no
