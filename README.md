@@ -1,2 +1,3 @@
-# teal-depository-demo
-Generated CRAN-style snapshots for the Teal architecture example. Published by CI.
+# Generated Depository output
+
+CI maintains this branch. Do not edit package archives manually. Publishing code lives on main.
