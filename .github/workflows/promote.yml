@@ -28,10 +28,10 @@ jobs:
       SNAPSHOT: ${{ inputs.snapshot }}
       RENV_PATHS_ROOT: /tmp/teal-renv-state
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: published
           path: storage
@@ -41,7 +41,7 @@ jobs:
         run: python3 tools/assert-main.py "$SNAPSHOT"
       - name: Validate package inventory and checksums
         run: python3 tools/depository.py validate "storage/site/snapshots/$SNAPSHOT"
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: armcn/teal-architecture-demo
           ref: ${{ steps.source.outputs.sha }}
@@ -68,17 +68,17 @@ jobs:
       EXPECTED_CURRENT: ${{ inputs.expected_current }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: published
           path: storage
       - name: Require matching staging evidence and update production selection
         run: python3 tools/depository.py promote storage/site "$SNAPSHOT" --expected-current "$EXPECTED_CURRENT" --workflow-url "$RUN_URL"
       - run: bash tools/commit-site.sh "Select production snapshot $SNAPSHOT"
-      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: storage/site
       - run: |
@@ -95,4 +95,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
