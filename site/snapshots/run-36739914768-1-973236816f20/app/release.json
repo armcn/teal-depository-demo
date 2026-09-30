@@ -1,0 +1,38 @@
+{
+  "packages": [
+    {
+      "file": "src/contrib/tb.checks_0.1.0.tar.gz",
+      "name": "tb.checks",
+      "sha256": "d855b32ab396d28e2220dd2f24314f1b1d849a751425fabf5cedaa32d1bc8321",
+      "source_sha256": "41d3c1903a419f0f9c646b85cee269f6724b2bf213449055baa1ea3acc8ca42f",
+      "version": "0.1.0"
+    },
+    {
+      "file": "src/contrib/tb.reporter_0.1.1.tar.gz",
+      "name": "tb.reporter",
+      "sha256": "3d66b51f5e196893b5f98d1934f132f290a065118e924a89f96321592887d31d",
+      "source_sha256": "88779f8965c7906f9e76c0656ffa7eaefda8dd7d00173f330838404689bfd648",
+      "version": "0.1.1"
+    },
+    {
+      "file": "src/contrib/tb.modules_0.1.0.tar.gz",
+      "name": "tb.modules",
+      "sha256": "94f1b4a07db70235132408cc1c093d635703f2edb5a596e12235bb20eb4a43d5",
+      "source_sha256": "2f68ce1e5f0bc39a9697062dde18fd29b3bb18f9bcac1430f775231c7a7536c5",
+      "version": "0.1.0"
+    },
+    {
+      "file": "src/contrib/tb.builder_0.1.0.tar.gz",
+      "name": "tb.builder",
+      "sha256": "06ed441d118ca6e188cde74a182feb690f45efbc8222240b0399081d072765c1",
+      "source_sha256": "a3c7df9fcc9b783b73c2a53c9c8affeaa0f2eb6f09bd483b25a4040dfc9241bb",
+      "version": "0.1.0"
+    }
+  ],
+  "r_version": "4.6.1",
+  "repository_url": "https://armcn.github.io/teal-depository-demo/snapshots/run-36739914768-1-973236816f20",
+  "schema": 1,
+  "snapshot": "run-36739914768-1-973236816f20",
+  "source_commit": "973236816f20ce320b3fc54bd90ba1f18bf64ef1",
+  "source_repository": "armcn/teal-architecture-demo"
+}
