@@ -1,0 +1,191 @@
+name: Publish candidate
+run-name: Publish source ${{ inputs.source_ref }}
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: 'Source branch or commit that passed Check source (usually main)'
+        required: true
+        default: main
+        type: string
+permissions:
+  contents: read
+# All workflows that write site/ share this lock. Never cancel an in-progress publication.
+concurrency:
+  group: depository-writer
+  cancel-in-progress: false
+jobs:
+  resolve:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+      snapshot: ${{ steps.source.outputs.snapshot }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - id: source
+        env:
+          SOURCE_REF: ${{ inputs.source_ref }}
+        run: python3 tools/resolve.py
+  build:
+    needs: resolve
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      RENV_PATHS_ROOT: /tmp/teal-renv-state
+      SOURCE_SHA: ${{ needs.resolve.outputs.sha }}
+      SNAPSHOT: ${{ needs.resolve.outputs.snapshot }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: published
+          path: storage
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: armcn/teal-architecture-demo
+          ref: ${{ needs.resolve.outputs.sha }}
+          path: source
+          persist-credentials: false
+      - uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2
+        with:
+          r-version: renv
+          working-directory: source
+          use-public-rspm: false
+      - name: Restore exact external dependencies
+        working-directory: source
+        run: Rscript --vanilla scripts/restore-dependencies.R
+      - name: Build and check, reusing unchanged published package archives
+        working-directory: source
+        run: python3 scripts/release.py build --out ../candidate --snapshot "$SNAPSHOT" --source-sha "$SOURCE_SHA" --existing-site ../storage/site
+      - name: Test a clean installation from the candidate repository
+        working-directory: source
+        run: python3 scripts/release.py verify ../candidate
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: candidate
+          path: candidate/
+          if-no-files-found: error
+          retention-days: 7
+  publish:
+    needs: [resolve, build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      SNAPSHOT: ${{ needs.resolve.outputs.snapshot }}
+      SOURCE_SHA: ${{ needs.resolve.outputs.sha }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: published
+          path: storage
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: candidate
+          path: candidate
+      - name: Validate and publish data only (never execute source code in this job)
+        run: python3 tools/depository.py publish candidate storage/site "$SNAPSHOT" "$SOURCE_SHA"
+      - run: bash tools/commit-site.sh "Publish snapshot $SNAPSHOT"
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: storage/site
+  pages:
+    needs: publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+  verify:
+    needs: [resolve, pages]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      SNAPSHOT: ${{ needs.resolve.outputs.snapshot }}
+      RENV_PATHS_ROOT: /tmp/teal-renv-state
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: published
+          path: storage
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: armcn/teal-architecture-demo
+          ref: ${{ needs.resolve.outputs.sha }}
+          path: source
+          persist-credentials: false
+      - uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2
+        with:
+          r-version: renv
+          working-directory: source
+          use-public-rspm: false
+      - name: Wait for exact published metadata and verify all HTTP bytes
+        run: python3 tools/verify-http.py "storage/site/snapshots/$SNAPSHOT"
+      - name: Restore over public HTTPS into an empty library
+        working-directory: source
+        run: python3 scripts/release.py verify "../storage/site/snapshots/$SNAPSHOT" --online
+  stage:
+    needs: [resolve, verify]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      SNAPSHOT: ${{ needs.resolve.outputs.snapshot }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: published
+          path: storage
+      - run: python3 tools/depository.py stage storage/site "$SNAPSHOT" --workflow-url "$RUN_URL"
+      - run: bash tools/commit-site.sh "Record verified dev snapshot $SNAPSHOT"
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          name: github-pages-staged
+          path: storage/site
+      - name: Write next steps
+        run: |
+          printf '## Candidate ready\n\nSnapshot: `%s`\n\nClean restore over HTTPS passed.\n\nUse **Promote or roll back** with this snapshot to select production.\n' "$SNAPSHOT" >> "$GITHUB_STEP_SUMMARY"
+  stage-pages:
+    needs: stage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+        with:
+          artifact_name: github-pages-staged
