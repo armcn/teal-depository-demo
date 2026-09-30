@@ -1,0 +1,2 @@
+# Development checks only; publication uses the Python standard library.
+ruff==0.14.14

@@ -10,7 +10,8 @@ on:
         type: string
 permissions:
   contents: read
-# All workflows that write site/ share this lock. Never cancel an in-progress publication.
+# All workflows that write site/ share this lock. Never cancel an in-progress
+# publication.
 concurrency:
   group: depository-writer
   cancel-in-progress: false
@@ -23,10 +24,12 @@ jobs:
       sha: ${{ steps.source.outputs.sha }}
       snapshot: ${{ steps.source.outputs.snapshot }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out workflow code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - id: source
+      - name: Resolve source and require passing CI
+        id: source
         env:
           SOURCE_REF: ${{ inputs.source_ref }}
         run: python3 tools/resolve.py
@@ -39,21 +42,25 @@ jobs:
       SOURCE_SHA: ${{ needs.resolve.outputs.sha }}
       SNAPSHOT: ${{ needs.resolve.outputs.snapshot }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out retained snapshot storage
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out retained snapshot storage
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: published
           path: storage
           persist-credentials: false
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out the exact source commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: armcn/teal-architecture-demo
           ref: ${{ needs.resolve.outputs.sha }}
           path: source
           persist-credentials: false
-      - uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2
+      - name: Install the pinned R version
+        uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2
         with:
           r-version: renv
           working-directory: source
@@ -63,11 +70,14 @@ jobs:
         run: Rscript --vanilla scripts/restore-dependencies.R
       - name: Build and check, reusing unchanged published package archives
         working-directory: source
-        run: python3 scripts/release.py build --out ../candidate --snapshot "$SNAPSHOT" --source-sha "$SOURCE_SHA" --existing-site ../storage/site
+        run: >-
+          python3 scripts/release.py build --out ../candidate --snapshot "$SNAPSHOT"
+          --source-sha "$SOURCE_SHA" --existing-site ../storage/site
       - name: Test a clean installation from the candidate repository
         working-directory: source
         run: python3 scripts/release.py verify ../candidate
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - name: Save the tested candidate artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: candidate
           path: candidate/
@@ -83,22 +93,29 @@ jobs:
       SNAPSHOT: ${{ needs.resolve.outputs.snapshot }}
       SOURCE_SHA: ${{ needs.resolve.outputs.sha }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out retained snapshot storage
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out retained snapshot storage
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: published
           path: storage
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - name: Download the tested candidate
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: candidate
           path: candidate
       - name: Validate and publish data only (never execute source code in this job)
-        run: python3 tools/depository.py publish candidate storage/site "$SNAPSHOT" "$SOURCE_SHA"
-      - run: bash tools/commit-site.sh "Publish snapshot $SNAPSHOT"
-      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        run: >-
+          python3 tools/depository.py publish candidate storage/site "$SNAPSHOT"
+          "$SOURCE_SHA"
+      - name: Commit generated files without force pushing
+        run: bash tools/commit-site.sh "Publish snapshot $SNAPSHOT"
+      - name: Prepare the retained site for Pages
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: storage/site
   pages:
@@ -112,7 +129,8 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - id: deployment
+      - name: Deploy the retained site to Pages
+        id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
   verify:
     needs: [resolve, pages]
@@ -122,22 +140,26 @@ jobs:
       SNAPSHOT: ${{ needs.resolve.outputs.snapshot }}
       RENV_PATHS_ROOT: /tmp/teal-renv-state
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out retained snapshot storage
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out retained snapshot storage
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: published
           path: storage
           persist-credentials: false
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out the exact source commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: armcn/teal-architecture-demo
           ref: ${{ needs.resolve.outputs.sha }}
           path: source
           persist-credentials: false
-      - uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2
+      - name: Install the pinned R version
+        uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2
         with:
           r-version: renv
           working-directory: source
@@ -146,7 +168,9 @@ jobs:
         run: python3 tools/verify-http.py "storage/site/snapshots/$SNAPSHOT"
       - name: Restore over public HTTPS into an empty library
         working-directory: source
-        run: python3 scripts/release.py verify "../storage/site/snapshots/$SNAPSHOT" --online
+        run: >-
+          python3 scripts/release.py verify "../storage/site/snapshots/$SNAPSHOT"
+          --online
   stage:
     needs: [resolve, verify]
     runs-on: ubuntu-24.04
@@ -157,23 +181,29 @@ jobs:
       SNAPSHOT: ${{ needs.resolve.outputs.snapshot }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out retained snapshot storage
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out retained snapshot storage
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: published
           path: storage
-      - run: python3 tools/depository.py stage storage/site "$SNAPSHOT" --workflow-url "$RUN_URL"
-      - run: bash tools/commit-site.sh "Record verified dev snapshot $SNAPSHOT"
-      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+      - name: Record verification evidence and select dev
+        run: >-
+          python3 tools/depository.py stage storage/site "$SNAPSHOT" --workflow-url
+          "$RUN_URL"
+      - name: Commit generated files without force pushing
+        run: bash tools/commit-site.sh "Record verified dev snapshot $SNAPSHOT"
+      - name: Prepare the retained site for Pages
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           name: github-pages-staged
           path: storage/site
       - name: Write next steps
-        run: |
-          printf '## Candidate ready\n\nSnapshot: `%s`\n\nClean restore over HTTPS passed.\n\nUse **Promote or roll back** with this snapshot to select production.\n' "$SNAPSHOT" >> "$GITHUB_STEP_SUMMARY"
+        run: python3 tools/summary.py candidate
   stage-pages:
     needs: stage
     runs-on: ubuntu-24.04
@@ -185,7 +215,8 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - id: deployment
+      - name: Deploy the retained site to Pages
+        id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
         with:
           artifact_name: github-pages-staged

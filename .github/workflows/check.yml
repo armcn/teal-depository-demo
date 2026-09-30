@@ -1,7 +1,12 @@
 name: Check Depository
 on:
   push:
-    paths: ['tools/**', 'tests/**', '.github/**']
+    paths:
+      - 'tools/**'
+      - 'tests/**'
+      - '.github/**'
+      - 'pyproject.toml'
+      - 'requirements-dev.txt'
   pull_request:
 permissions:
   contents: read
@@ -10,8 +15,17 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out workflow code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - run: bash tools/lint-workflows.sh
-      - run: python3 -m unittest discover -s tests -v
+      - name: Install pinned code style tooling
+        run: python3 -m pip install -r requirements-dev.txt
+      - name: Check Python formatting and imports
+        run: |
+          python3 -m ruff format --check .
+          python3 -m ruff check .
+      - name: Validate workflow syntax and expressions
+        run: bash tools/lint-workflows.sh
+      - name: Test publishing and promotion rules
+        run: python3 -m unittest discover -s tests -v
