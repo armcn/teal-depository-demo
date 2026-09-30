@@ -28,10 +28,12 @@ jobs:
       SNAPSHOT: ${{ inputs.snapshot }}
       RENV_PATHS_ROOT: /tmp/teal-renv-state
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out retained snapshot storage
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out retained snapshot storage
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: published
           path: storage
@@ -41,13 +43,15 @@ jobs:
         run: python3 tools/assert-main.py "$SNAPSHOT"
       - name: Validate package inventory and checksums
         run: python3 tools/depository.py validate "storage/site/snapshots/$SNAPSHOT"
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out the exact source commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: armcn/teal-architecture-demo
           ref: ${{ steps.source.outputs.sha }}
           path: source
           persist-credentials: false
-      - uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2
+      - name: Install the pinned R version
+        uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2
         with:
           r-version: renv
           working-directory: source
@@ -68,21 +72,27 @@ jobs:
       EXPECTED_CURRENT: ${{ inputs.expected_current }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out retained snapshot storage
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out retained snapshot storage
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: published
           path: storage
       - name: Require matching staging evidence and update production selection
-        run: python3 tools/depository.py promote storage/site "$SNAPSHOT" --expected-current "$EXPECTED_CURRENT" --workflow-url "$RUN_URL"
-      - run: bash tools/commit-site.sh "Select production snapshot $SNAPSHOT"
-      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        run: >-
+          python3 tools/depository.py promote storage/site "$SNAPSHOT"
+          --expected-current "$EXPECTED_CURRENT" --workflow-url "$RUN_URL"
+      - name: Commit generated files without force pushing
+        run: bash tools/commit-site.sh "Select production snapshot $SNAPSHOT"
+      - name: Prepare the retained site for Pages
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: storage/site
-      - run: |
-          printf '## Production selection\n\nSnapshot: `%s`\n\nPrevious: `%s`\n\nNo package archives were rebuilt or changed.\n' "$SNAPSHOT" "$EXPECTED_CURRENT" >> "$GITHUB_STEP_SUMMARY"
+      - name: Explain the production selection
+        run: python3 tools/summary.py production
   pages:
     needs: promote
     runs-on: ubuntu-24.04
@@ -94,5 +104,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - id: deployment
+      - name: Deploy the retained site to Pages
+        id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

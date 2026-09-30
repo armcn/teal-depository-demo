@@ -41,3 +41,6 @@ python3 -m unittest discover -s tests -v
 The workflows use pinned actions, read-only defaults, a shared publication concurrency group, bounded timeouts, checksummed artifacts, isolated build jobs, and fast-forward-only Git writes. No cross-repository personal access token is required for these public example repositories.
 
 GitHub Pages must be configured with **Source: GitHub Actions**. The `published` branch must exist before the first publication. The setup creates it with an empty `site/` directory and index page.
+
+Read the [automation guide](docs/AUTOMATION.md) for the code layers, reading order,
+and local formatting checks.

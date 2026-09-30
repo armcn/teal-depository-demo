@@ -5,3 +5,5 @@ __pycache__/
 candidate/
 source/
 storage/
+.venv/
+.ruff_cache/
