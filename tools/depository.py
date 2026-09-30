@@ -175,7 +175,9 @@ def render(site):
     site = Path(site)
     lines = ["<!doctype html><html lang='en'><meta charset='utf-8'><title>Teal demo Depository</title>",
              "<h1>Teal demo Depository</h1><p>Immutable R package snapshots. Mock code only.</p>",
-             "<p>Dev and production are simulated release selections, not hosted Connect applications.</p>"]
+             "<p>Dev and production are simulated release selections, not hosted Connect applications.</p>",
+             "<p>For normal use, download the dev or prod selection. An unverified candidate may be incomplete or have failed testing.</p>",
+             "<p><a href='https://github.com/armcn/teal-architecture-demo/blob/main/docs/WALKTHROUGH.md'>Developer walkthrough</a></p>"]
     for channel in ("dev", "prod"):
         path = site / "channels" / f"{channel}.json"
         value = read(path)["snapshot"] if path.exists() else "not selected"
@@ -183,8 +185,11 @@ def render(site):
     lines.append("<ul>")
     for path in sorted((site / "snapshots").glob("*/release.json")):
         snapshot = valid_id(path.parent.name)
+        evidence = site / "evidence" / f"{snapshot}.json"
+        verified = evidence.exists() and read(evidence).get("manifest_sha256") == digest(path)
+        state = "verified candidate" if verified else "unverified candidate"
         lines.append(f"<li><a href='snapshots/{snapshot}/release.json'>{snapshot}</a> — "
-                     f"<a href='snapshots/{snapshot}/src/contrib/PACKAGES'>packages</a></li>")
+                     f"<a href='snapshots/{snapshot}/src/contrib/PACKAGES'>packages</a> — {state}</li>")
     lines.append("</ul></html>")
     site.mkdir(parents=True, exist_ok=True)
     (site / "index.html").write_text("\n".join(lines) + "\n")

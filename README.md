@@ -12,6 +12,8 @@ Generated CRAN-style R package snapshots for [teal-architecture-demo](https://gi
 
 Dev and production are simulated release selections, not hosted Connect apps. The example Shiny app runs locally.
 
+Use the **dev** or **prod** selections for routine downloads. The snapshot list also retains unverified candidates, including builds stopped after publication but before staging verification. Their presence on the site does not make them eligible for production.
+
 ## Repository layout
 
 - `main`: publication workflows, validation code, and tests. Change these through reviewed pull requests.
