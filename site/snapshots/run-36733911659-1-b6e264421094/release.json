@@ -1,0 +1,53 @@
+{
+  "files": {
+    "app/app.R": "049f95aeea2bd6059c570ddf4326225a1fc7ba19796be41ef37ca2915fac2f20",
+    "app/bootstrap.R": "8f3ab2856461202da4ee3feace9f33bc07446dea46c15a46204e159d2f7ed181",
+    "app/release.json": "6a815af50533e8c568d61d6ad4a920c23740b631be4c8c7d2bc56727dc6315f9",
+    "app/renv.lock": "839f370075d9f2789e723423689ecddf9adf0a806c1ec2b83d3ad294c7b72daa",
+    "app/restore.R": "290f2a61e0cf7c53969c437b127313775ce0d47a3d59091abc92115e5c215526",
+    "smoke.R": "5d604b65fef1ff9e1cedd0d9a02eee5e5265779044f7f4aa2f6992905ce413b9",
+    "src/contrib/PACKAGES": "695cc4cd6d5d2b02e0e11b6bd21b8b4bf9bfebf8fa748cdb529f9ccbf51fce5c",
+    "src/contrib/PACKAGES.gz": "6a647caf1b85ee2d5f480470e7ede574dbd338f0d063a99ff08e089cfdf9cd38",
+    "src/contrib/PACKAGES.rds": "85d2cf05f137cb92873d4cfa20f976e32e53f8afef9ac125939d8f591f84c61e",
+    "src/contrib/tb.builder_0.1.0.tar.gz": "06ed441d118ca6e188cde74a182feb690f45efbc8222240b0399081d072765c1",
+    "src/contrib/tb.checks_0.1.0.tar.gz": "d855b32ab396d28e2220dd2f24314f1b1d849a751425fabf5cedaa32d1bc8321",
+    "src/contrib/tb.modules_0.1.0.tar.gz": "94f1b4a07db70235132408cc1c093d635703f2edb5a596e12235bb20eb4a43d5",
+    "src/contrib/tb.reporter_0.1.0.tar.gz": "9cd894f1d5745843606378127c4f47a8d4c20c22247c24b72d1d9e6107cecb41"
+  },
+  "packages": [
+    {
+      "file": "src/contrib/tb.checks_0.1.0.tar.gz",
+      "name": "tb.checks",
+      "sha256": "d855b32ab396d28e2220dd2f24314f1b1d849a751425fabf5cedaa32d1bc8321",
+      "source_sha256": "41d3c1903a419f0f9c646b85cee269f6724b2bf213449055baa1ea3acc8ca42f",
+      "version": "0.1.0"
+    },
+    {
+      "file": "src/contrib/tb.reporter_0.1.0.tar.gz",
+      "name": "tb.reporter",
+      "sha256": "9cd894f1d5745843606378127c4f47a8d4c20c22247c24b72d1d9e6107cecb41",
+      "source_sha256": "ff8085e0878a5276cc9f65bda4c7509c4a58fa3d9660f0cb725ff16d7bd48efa",
+      "version": "0.1.0"
+    },
+    {
+      "file": "src/contrib/tb.modules_0.1.0.tar.gz",
+      "name": "tb.modules",
+      "sha256": "94f1b4a07db70235132408cc1c093d635703f2edb5a596e12235bb20eb4a43d5",
+      "source_sha256": "2f68ce1e5f0bc39a9697062dde18fd29b3bb18f9bcac1430f775231c7a7536c5",
+      "version": "0.1.0"
+    },
+    {
+      "file": "src/contrib/tb.builder_0.1.0.tar.gz",
+      "name": "tb.builder",
+      "sha256": "06ed441d118ca6e188cde74a182feb690f45efbc8222240b0399081d072765c1",
+      "source_sha256": "a3c7df9fcc9b783b73c2a53c9c8affeaa0f2eb6f09bd483b25a4040dfc9241bb",
+      "version": "0.1.0"
+    }
+  ],
+  "r_version": "4.6.1",
+  "repository_url": "https://armcn.github.io/teal-depository-demo/snapshots/run-36733911659-1-b6e264421094",
+  "schema": 1,
+  "snapshot": "run-36733911659-1-b6e264421094",
+  "source_commit": "b6e2644210942c48c8dbe2d46e608fe20fbb988f",
+  "source_repository": "armcn/teal-architecture-demo"
+}
