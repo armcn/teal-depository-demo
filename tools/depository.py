@@ -153,7 +153,14 @@ def promote(site, snapshot, expected_current, workflow_url):
     if any(len(re.split(r"[.-]", p["version"])) > 3 for p in manifest["packages"]):
         raise ValueError("Development package versions cannot be promoted to production")
     target = site / "channels" / "prod.json"
-    current = read(target)["snapshot"] if target.exists() else "none"
+    current_record = read(target) if target.exists() else {}
+    current = current_record.get("snapshot", "none")
+    if (current == snapshot and current_record.get("previous") == expected_current
+            and current_record.get("promotion_workflow_url") == workflow_url
+            and current_record.get("manifest_sha256") == evidence["manifest_sha256"]):
+        # A failed upload/deployment may be retried after the Git commit succeeded.
+        # Only this exact workflow operation is an idempotent retry.
+        return
     if current != expected_current:
         raise ValueError(f"Production changed: expected {expected_current}, found {current}")
     record = dict(evidence, previous=current, promoted_at=datetime.now(timezone.utc).isoformat(),

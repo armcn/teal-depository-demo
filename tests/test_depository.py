@@ -102,7 +102,16 @@ class DepositoryTests(unittest.TestCase):
         depot.stage(self.site, "one", "https://example.org/staging")
         depot.promote(self.site, "one", "none", "https://example.org/production")
         with self.assertRaisesRegex(ValueError, "Production changed"):
-            depot.promote(self.site, "one", "none", "https://example.org/production")
+            depot.promote(self.site, "one", "none", "https://example.org/different-run")
+
+    def test_promotion_retry_after_commit_preserves_history(self):
+        self.publish()
+        depot.stage(self.site, "one", "https://example.org/staging")
+        depot.promote(self.site, "one", "none", "https://example.org/production")
+        before = (self.site / "channels/prod.json").read_bytes()
+        depot.promote(self.site, "one", "none", "https://example.org/production")
+        self.assertEqual(before, (self.site / "channels/prod.json").read_bytes())
+        self.assertEqual(len(list((self.site / "history").glob("*.json"))), 1)
 
     def test_development_version_cannot_reach_production(self):
         other = fixture(self.root / "other", snapshot="dev", version="1.0.0.9001")
