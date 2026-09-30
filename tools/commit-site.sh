@@ -1,13 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd storage
-git config user.name 'github-actions[bot]'
-git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-git add -- site
-if git diff --cached --quiet; then
-  echo 'No site changes to commit.'
-  exit 0
-fi
-git commit -m "$1"
-# No force push and no automatic conflict resolution. A concurrent manual write fails closed.
-git push origin HEAD:published
+
+main() {
+  local message=$1
+  cd storage
+  configure_commit_identity
+  git add -- site
+  if git diff --cached --quiet; then
+    echo 'No site changes to commit.'
+    return
+  fi
+  commit_and_push_site "$message"
+}
+
+configure_commit_identity() {
+  git config user.name 'github-actions[bot]'
+  git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+}
+
+commit_and_push_site() {
+  git commit -m "$1"
+  # Refuse concurrent edits. Never force push or resolve a conflict automatically.
+  git push origin HEAD:published
+}
+
+main "$@"
