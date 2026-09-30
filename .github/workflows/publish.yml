@@ -42,7 +42,7 @@ jobs:
       SOURCE_SHA: ${{ needs.resolve.outputs.sha }}
       SNAPSHOT: ${{ needs.resolve.outputs.snapshot }}
     steps:
-      - name: Check out retained snapshot storage
+      - name: Check out workflow code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -93,7 +93,7 @@ jobs:
       SNAPSHOT: ${{ needs.resolve.outputs.snapshot }}
       SOURCE_SHA: ${{ needs.resolve.outputs.sha }}
     steps:
-      - name: Check out retained snapshot storage
+      - name: Check out workflow code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
@@ -140,7 +140,7 @@ jobs:
       SNAPSHOT: ${{ needs.resolve.outputs.snapshot }}
       RENV_PATHS_ROOT: /tmp/teal-renv-state
     steps:
-      - name: Check out retained snapshot storage
+      - name: Check out workflow code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
@@ -181,7 +181,7 @@ jobs:
       SNAPSHOT: ${{ needs.resolve.outputs.snapshot }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
-      - name: Check out retained snapshot storage
+      - name: Check out workflow code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
